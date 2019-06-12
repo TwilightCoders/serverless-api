@@ -3,7 +3,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const helmet = require("helmet");
 const graphqlHTTP = require("express-graphql");
-const { GraphQLSchema , GraphQLObjectType , GraphQLString, GraphQLNonNull, GraphQLID } = require("graphql");
 
 // Configure express app
 const app = express();
@@ -14,62 +13,17 @@ app.use(helmet());
 // DB
 require("./db");
 
-// Memory Store
-let inMemoryStore = {};
-const RootMutation = new GraphQLObjectType({
-  name: "RootMutation",
-  description: "The root mutation",
-  fields: {
-    setNode: {
-      type: GraphQLString,
-      args: {
-        id: {
-          type: new GraphQLNonNull(GraphQLID),
-        },
-        value: {
-          type: new GraphQLNonNull(GraphQLString),
-        }
-      },
-      resolve(source, args) {
-        inMemoryStore[args.key] = args.value;
-        return inMemoryStore[args.key];
-      }
-    }
-  }
-})
+// GameTypes
+const { model: gameTypes, schema } = require("./models/gameTypes");
 
-// RootQuery
-const RootQuery = new GraphQLObjectType({
-  name: "RootQuery",
-  description: "The Root Query",
-  fields: {
-    viewer: {
-      type: GraphQLString,
-      resolve() {
-        return "viewer!";
-      }
-    },
-    node: {
-      type: GraphQLString,
-      args: {
-        id: {
-          type: new GraphQLNonNull(GraphQLID),
-        }
-      },
-      resolve(source, args) {
-        return inMemoryStore[args.key];
-      }
-    }
-  }
-});
-
-// Schema
-const Schema = new GraphQLSchema({
-  query: RootQuery,
-  mutation: RootMutation,
-});
+// Clear gameTypes so that we don't persist testing
+gameTypes.remove({});
 
 // Set up GraphQL endpoint
-app.use("/graphql", graphqlHTTP({ schema: Schema, graphiql: true }));
+app.use("/graphql", graphqlHTTP({
+  schema,
+  rootValue: gameTypes.find(),
+  graphiql: true
+}));
 
 module.exports = app;
