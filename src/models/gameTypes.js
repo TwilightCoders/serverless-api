@@ -24,7 +24,7 @@ const WinTypes = ["rounds", "score"];
 // Mongoose Schema
 const gameTypes = new mongoose.Schema({
   // `_id` will be added automatically by mongoose
-  shortId: { type: String, unique: true, default: shortId.generate, required: true },
+  shortId: { type: String, unique: true, default: shortId.generate },
   url: { type: String, unique: true, lowercase: true, trim: true, required: true },
   name: { type: String, required: true },
   minPlayers: { type: Number, default: PLAYERS.defaultMin, min: PLAYERS.min, max: PLAYERS.max, required: true },
@@ -93,84 +93,216 @@ type GameSettings {
   The mongoose ID. If a user can access this, they should be expected to have write access
   """
   _id: ID!
+
   """
   An alternative ID which is easier to share with others. This ID will typically be useful to offer read only access to a game
   """
   shortId: ID!
+
+  """
+  The URL stub of the game - must be unique
+  """
+  url: String!
+
   """
   The name of the game
   """
   name: String!
+
   """
   Minimum number of players a game can have - Min: ${PLAYERS.min} - Default: ${PLAYERS.defaultMin}
   """
   minPlayers: Int!
+
   """
   Maximum number of players a game can have - Max: ${PLAYERS.max} - Default: ${PLAYERS.defaultMax}
   """
   maxPlayers: Int!
+
+  """
+  List of types of score types available in the game
+  """
   scoreTypes: [ScoreTypes!]!
+
   """
   The score each player will start the game with
   """
   startScore: Int!
+
   """
   Will this game incorporate whammies?
   """
   whammies: Boolean!
+
   """
   What is a Whammie worth in score? Note this ties in to score settings. A negative number here will be double negated into a positive number if the ScoreType is set to 'Negative'
   """
   whammieScore: Int!
+
   """
   What CSS style name should apply to a whammie
   """
   whammieStyle: [WhammieStyles]
+
   """
   What is a whammie called, if we are using it?
   """
   whammieName: String
+
   """
   Is a player allowed to pass a turn?
   """
   passesAllowed: Boolean!
+
   """
   Are the number of rounds fixed? If so, set the number. Otherwise leave it null
   """
   fixedRounds: Int
+
   """
   Multiple win types are allowed, set which ones are allowed here
   """
   winType: [WinTypes!]!
+
   """
   What is the primary Win Condition
   """
   winCondition: WinConditions!
+
   """
   What score would result in a win if the condition were set to score
   """
   winScore: Int
+
   """
   What condition would break a tie?
   """
   tieBreaker: WinConditions!
+
   """
   The app can track who the dealer is if you establish that the dealer rotates
   """
   dealerRotates: Boolean!
+
   """
   Tell the app if the scoreboard should be pre-rendered. Setting this to true will only work if fixedScores is also set to true
   """
   preRenderScoreboard: Boolean!
+
   """
   Provide an object here to map replacement values for a given score value (example: 11 = J or Jack)
   """
   levelLabels: String
+
   """
   The description of the game itself
   """
   description: String
 }
+
+
+input GameSettingsInput {
+  """
+  The URL stub of the game - must be unique
+  """
+  url: String!
+
+  """
+  The name of the game
+  """
+  name: String!
+
+  """
+  Minimum number of players a game can have - Min: ${PLAYERS.min} - Default: ${PLAYERS.defaultMin}
+  """
+  minPlayers: Int!
+
+  """
+  Maximum number of players a game can have - Max: ${PLAYERS.max} - Default: ${PLAYERS.defaultMax}
+  """
+  maxPlayers: Int!
+
+  """
+  List of types of score types available in the game
+  """
+  scoreTypes: [ScoreTypes!]!
+
+  """
+  The score each player will start the game with
+  """
+  startScore: Int!
+
+  """
+  Will this game incorporate whammies?
+  """
+  whammies: Boolean!
+
+  """
+  What is a Whammie worth in score? Note this ties in to score settings. A negative number here will be double negated into a positive number if the ScoreType is set to 'Negative'
+  """
+  whammieScore: Int!
+
+  """
+  What CSS style name should apply to a whammie
+  """
+  whammieStyle: [WhammieStyles]
+
+  """
+  What is a whammie called, if we are using it?
+  """
+  whammieName: String
+
+  """
+  Is a player allowed to pass a turn?
+  """
+  passesAllowed: Boolean!
+
+  """
+  Are the number of rounds fixed? If so, set the number. Otherwise leave it null
+  """
+  fixedRounds: Int
+
+  """
+  Multiple win types are allowed, set which ones are allowed here
+  """
+  winType: [WinTypes!]!
+
+  """
+  What is the primary Win Condition
+  """
+  winCondition: WinConditions!
+
+  """
+  What score would result in a win if the condition were set to score
+  """
+  winScore: Int
+
+  """
+  What condition would break a tie?
+  """
+  tieBreaker: WinConditions!
+
+  """
+  The app can track who the dealer is if you establish that the dealer rotates
+  """
+  dealerRotates: Boolean!
+
+  """
+  Tell the app if the scoreboard should be pre-rendered. Setting this to true will only work if fixedScores is also set to true
+  """
+  preRenderScoreboard: Boolean!
+
+  """
+  Provide an object here to map replacement values for a given score value (example: 11 = J or Jack)
+  """
+  levelLabels: String
+
+  """
+  The description of the game itself
+  """
+  description: String
+}
+
 
 """
 The game types currently saved on the backend API
@@ -180,48 +312,68 @@ type Query {
   List of game types currently saved on the backend API
   """
   gameConfigs: GameSettings
+
   """
   Retrieve a game type by its ID
   """
   GameTypeById(id: ID!): [GameSettings]!
+
   """
   Retrieve a game type by its shortId
   """
-  GameTypeByShortId(id: ID!): [GameSettings]!
+  GameTypeByShortId(shortId: ID!): [GameSettings]!
+
+  """
+  Get all Game Types
+  """
+  GetAllGameTypes: [GameSettings]!
 }
 
-#"""
-#The available methods to create, update, or delete Game Types
-#"""
-#type Mutation {
-#  addGameType(gameType: GameSettings!): GameSettings! {
-#    _id
-#    shortId
-#    name
-#    minPlayers
-#    maxPlayers
-#    scoreTypes
-#    startScore
-#    whammies
-#    whammieScore
-#    whammieStyle
-#    whammieName
-#    passesAllowed
-#    fixedRounds
-#    winType
-#    winCondition
-#    winScore
-#    tieBreaker
-#    dealerRotates
-#    preRenderScoreboard
-#    levelLabels
-#  }
-#}
-`)
+"""
+The available methods to create, update, or delete Game Types
+"""
+type Mutation {
+  AddGameType(gameType: GameSettingsInput!): GameSettings!
+}
+`);
 
+/*
+mutation{
+  AddGameType(gameType: {
+    name:"Three Thirteen"
+    url:"/three-thirteen"
+    minPlayers: 2
+    maxPlayers: 4
+    scoreTypes: [positive]
+    startScore: 0
+    whammies: false
+    whammieScore: 0
+    passesAllowed: false
+    winType: score
+    winCondition: low
+    tieBreaker: low
+    dealerRotates: true
+    preRenderScoreboard: true
+  }) {
+    _id
+    name
+    shortId
+  }
+}
+*/
+
+const model = mongoose.model("GameTypes", gameTypes);
+
+const rootValue = {
+  AddGameType: ({gameType}) => model.create(gameType),
+  GetAllGameTypes: () => model.find(),
+  GameTypeByShortId: ({shortId}) => model.find({shortId}),
+  GameTypeById: id => model.findOne({_id: id}),
+}
 
 // Export the model, and the schema
 module.exports = {
-  model: mongoose.model("GameTypes", gameTypes),
+  model,
+  rootValue,
   schema,
 }

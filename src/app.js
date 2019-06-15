@@ -14,7 +14,7 @@ app.use(helmet());
 require("./db");
 
 // GameTypes
-const { model: gameTypes, schema } = require("./models/gameTypes");
+const { model: gameTypes, rootValue, schema } = require("./models/gameTypes");
 
 // Clear gameTypes so that we don't persist testing
 gameTypes.remove({});
@@ -22,7 +22,7 @@ gameTypes.remove({});
 // Set up GraphQL endpoint
 app.use("/graphql", graphqlHTTP({
   schema,
-  rootValue: gameTypes.find(),
+  rootValue,
   graphiql: true
 }));
 
